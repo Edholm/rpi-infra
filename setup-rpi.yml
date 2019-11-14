@@ -1,0 +1,147 @@
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+  any_errors_fatal: yes
+  vars:
+   - user: eda
+  tasks:
+    - name: Enable cgroup memory
+      replace:
+        path: /boot/firmware/nobtcmd.txt
+        regexp: 'rootwait$'
+        replace: 'rootwait cgroup_enable=memory'
+      notify: Reboot PI
+    - meta: flush_handlers
+    
+    - name: Upgrade all packages to the latest version
+      apt:
+        name: "*"
+        state: latest
+
+    - name: Add docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add docker repository
+      apt_repository:
+        repo: deb [arch=arm64] https://download.docker.com/linux/ubuntu xenial stable
+        state: present
+        update_cache: yes
+
+    - name: Install docker-ce, silversearcher etc
+      apt:
+        update_cache: no
+        state: present
+        pkg:
+        - docker-ce=5:18.09.9~3-0~ubuntu-xenial
+        - silversearcher-ag
+        - bash-completion
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg-agent
+        - software-properties-common
+
+    - name: Hold docker-ce
+      dpkg_selections:
+          name: docker-ce
+          selection: hold
+
+    - name: Hold docker-ce-cli
+      dpkg_selections:
+          name: docker-ce
+          selection: hold
+
+    - name: "Add {{ user }} to docker group"
+      user:
+        name: "{{ user }}"
+        groups: docker
+        append: yes
+
+    - name: Copy daemon.json to host
+      template:
+        src: daemon.json
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: u=rw,g=,o=
+      notify:
+      - Start and enable docker-ce
+
+    - name: Add Kubernetes GPG key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Add Kubernetes repository
+      apt_repository:
+        repo: deb [arch=arm64] https://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+        update_cache: yes
+
+    - name: Install kubelet, kubeadm, kubectl
+      apt:
+        update_cache: no
+        state: present
+        pkg:
+        - kubelet
+        - kubeadm
+        - kubectl
+
+    - name: Hold kubelet
+      dpkg_selections:
+          name: kubelet
+          selection: hold
+
+    - name: Hold kubeadm
+      dpkg_selections:
+          name: kubeadm
+          selection: hold
+
+    - name: Hold kubectl
+      dpkg_selections:
+          name: kubectl
+          selection: hold
+
+    - name: setup kernel parameters for k8s
+      sysctl: name={{item.name}} value={{item.value}} state=present
+      with_items:
+        - {name:  "net.bridge.bridge-nf-call-iptables", value: "1" }
+        - {name:  "net.bridge.bridge-nf-call-ip6tables", value: "1" }
+        - {name:  "net.ipv4.ip_forward", value: "1" }
+        - {name:  "net.ipv4.ip_nonlocal_bind", value: "1" }
+        - {name:  "net.ipv4.conf.all.rp_filter", value: "1" }
+
+    - name: Add kubectl/kubeadm/helm shell competions to ~/.bashrc (if exists)
+      become: no
+      lineinfile:
+        dest: ~/.bashrc
+        line: "{{ item }}"
+        state: present
+        create: no
+      ignore_errors: no
+      with_items:
+      - "# k8s shell completion"
+      - "source <(kubectl completion {{ shell | default ('bash') }} 2>/dev/null    || true)"
+      - "source <(kubeadm completion {{ shell | default ('bash') }} 2>/dev/null    || true)"
+   #   - "source <(helm    completion {{ shell | default ('bash') }} 2>/dev/null    || true)"
+   #   - "complete -F __start_kubectl k"
+
+  handlers:
+    - name: Start and enable docker-ce
+      systemd:
+        name: docker.service
+        state: started
+        enabled: yes
+    - name: Reboot PI
+      reboot:
+
+- hosts: master
+  become: yes
+  become_method: sudo
+  any_errors_fatal: yes
+  tasks:
+    - name: Init k8s master
+      shell: kubeadm init
