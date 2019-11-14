@@ -14,6 +14,19 @@ metadata:
 spec:
   minVersion: VersionTLS12
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: traefik-data
+  namespace: infra
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -55,7 +68,7 @@ spec:
             - --certificatesresolvers.namecheap.acme.dnsChallenge.provider=namecheap
             - --certificatesResolvers.namecheap.acme.dnsChallenge.delayBeforeCheck=0
             - --certificatesresolvers.namecheap.acme.email=certs@verypublic.org
-            - --certificatesresolvers.namecheap.acme.storage=acme.json
+            - --certificatesresolvers.namecheap.acme.storage=/var/lib/traefik/acme.json
             - --certificatesResolvers.namecheap.acme.dnsChallenge.resolvers="1.1.1.1:53"
             # Please note that this is the staging Let's Encrypt server.
             # Once you get things working, you should remove that whole line altogether.
@@ -80,4 +93,10 @@ spec:
                 secretKeyRef:
                   name: namecheap
                   key: api-key
-
+          volumeMounts:
+            - name: traefik-data
+              mountPath: /var/lib/traefik
+      volumes:
+        - name: traefik-data
+          persistentVolumeClaim:
+            claimName: traefik-data
