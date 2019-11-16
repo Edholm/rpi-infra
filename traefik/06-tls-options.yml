@@ -3,6 +3,8 @@ kind: TLSOption
 metadata:
   name: default
   namespace: infra
+  labels:
+    expose: all
 spec:
   minVersion: VersionTLS13
   sniStrict: true

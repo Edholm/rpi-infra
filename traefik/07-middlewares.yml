@@ -2,14 +2,14 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: middleware
-  labels:
-    app: traefik
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: https-only
   namespace: middleware
+  labels:
+    expose: all
 spec:
   redirectScheme:
     permanent: true
@@ -20,16 +20,20 @@ kind: Middleware
 metadata:
   name: security-headers
   namespace: middleware
+  labels:
+    expose: all
 spec:
   headers:
-    frameDeny: "true"
-    sslRedirect: "true"
+    frameDeny: true
+    sslRedirect: true
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: secured
   namespace: middleware
+  labels:
+    expose: all
 spec:
   chain:
     middlewares:
@@ -44,6 +48,8 @@ kind: Middleware
 metadata:
   name: internal-ips-only
   namespace: middleware
+  labels:
+    expose: all
 spec:
   ipWhiteList:
     sourceRange:
@@ -57,6 +63,8 @@ kind: Middleware
 metadata:
   name: local-basic-auth
   namespace: middleware
+  labels:
+    expose: all
 spec:
   basicAuth:
     secret: htpasswd
@@ -68,6 +76,8 @@ kind: Middleware
 metadata:
   name: secured-local
   namespace: middleware
+  labels:
+    expose: all
 spec:
   chain:
     middlewares:

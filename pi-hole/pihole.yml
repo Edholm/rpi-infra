@@ -191,6 +191,8 @@ kind: IngressRoute
 metadata:
   name: pihole-http
   namespace: infra
+  labels:
+    expose: internal
 spec:
   entryPoints:
     - web
@@ -209,6 +211,8 @@ kind: IngressRoute
 metadata:
   name: pihole-https
   namespace: infra
+  labels:
+    expose: internal
 spec:
   entryPoints:
     - websecure

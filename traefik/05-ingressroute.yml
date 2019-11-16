@@ -2,8 +2,10 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: traefik-route-redirect
-  app: traefik
   namespace: infra
+  labels:
+    app: traefik
+    expose: internal
 spec:
   entryPoints:
     - web
@@ -21,8 +23,10 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: traefik-route
-  app: traefik
   namespace: infra
+  labels:
+    app: traefik
+    expose: internal
 spec:
   entryPoints:
     - websecure
