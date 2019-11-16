@@ -1,6 +1,7 @@
 [nodes]
 rpi-1.lan.elee.cloud
 rpi-2.lan.elee.cloud
+rpi-3.lan.elee.cloud
 
 [master]
 rpi-1.lan.elee.cloud
