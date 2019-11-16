@@ -1,44 +1,42 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: traefik-redirect
+  name: traefik-route-redirect
+  app: traefik
   namespace: infra
 spec:
   entryPoints:
     - web
   routes:
-  - match: Host(`traefik.k8s.elee.cloud`)
-    kind: Rule
-    services:
-    - name: traefik
-      port: 8080
-
-    middlewares:
-      - name: redirect-https
+    - match: Host(`traefik.k8s.elee.cloud`)
+      kind: Rule
+      services:
+        - name: traefik
+          port: 8080
+      middlewares:
+        - name: secured-local
+          namespace: middleware
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: traefik-https
+  name: traefik-route
+  app: traefik
   namespace: infra
 spec:
   entryPoints:
     - websecure
   routes:
-  - match: Host(`traefik.k8s.elee.cloud`)
-    kind: Rule
-    services:
-    - name: traefik
-      port: 8080
+    - match: Host(`traefik.k8s.elee.cloud`)
+      kind: Rule
+      services:
+      - name: traefik
+        port: 8080
+      middlewares:
+        - name: secured-local
+          namespace: middleware
   tls:
     certResolver: namecheap
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: redirect-https
-  namespace: infra
-spec:
-  redirectScheme:
-    permanent: true
-    scheme: https
+    options:
+      name: default
+      namespace: infra

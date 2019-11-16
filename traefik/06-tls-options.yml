@@ -1,0 +1,8 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: TLSOption
+metadata:
+  name: default
+  namespace: infra
+spec:
+  minVersion: VersionTLS13
+  sniStrict: true
