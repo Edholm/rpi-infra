@@ -91,8 +91,12 @@ metadata:
     app: pihole
 spec:
   replicas: 1
+  revisionHistoryLimit: 3
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: pihole
@@ -102,12 +106,13 @@ spec:
         app: pihole
         name: pihole
     spec:
+      terminationGracePeriodSeconds: 60
       nodeSelector:
         node-type: infra
       containers:
         - name: pihole
           image: pihole/pihole:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           env:
             - name: VIRTUAL_HOST
               value: pihole.k8s.elee.cloud
@@ -146,20 +151,40 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: pihole-dns
+  annotations:
+    metallb.universe.tf/address-pool: default
+    metallb.universe.tf/allow-shared-ip: infra-node
+  name: pihole-dns-udp
   namespace: infra
 spec:
   selector:
     app: pihole
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  loadBalancerIP: 192.168.10.1
+  ports:
+    - port: 53
+      protocol: UDP
+      name: dns-udp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    metallb.universe.tf/address-pool: default
+    metallb.universe.tf/allow-shared-ip: infra-node
+  name: pihole-dns-tcp
+  namespace: infra
+spec:
+  selector:
+    app: pihole
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  loadBalancerIP: 192.168.10.1
   ports:
     - port: 53
       protocol: TCP
       name: dns-tcp
-    - port: 53
-      protocol: UDP
-      name: dns-udp
-  externalIPs:
-    - 192.168.1.17
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
@@ -176,7 +201,8 @@ spec:
         - name: pihole
           port: 80
       middlewares:
-        - name: redirect-https
+        - name: secured-local
+          namespace: middleware
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
@@ -192,5 +218,11 @@ spec:
       services:
         - name: pihole
           port: 80
+      middlewares:
+        - name: secured-local
+          namespace: middleware
   tls:
     certResolver: namecheap
+    options:
+      name: default
+      namespace: infra

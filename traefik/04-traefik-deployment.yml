@@ -37,8 +37,12 @@ metadata:
 
 spec:
   replicas: 1
+  revisionHistoryLimit: 3
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: traefik
@@ -49,6 +53,7 @@ spec:
     spec:
       nodeSelector:
         node-type: infra
+      ro
       serviceAccountName: traefik-ingress-controller
       containers:
         - name: traefik
@@ -77,10 +82,8 @@ spec:
           ports:
             - name: web
               containerPort: 80
-              hostPort: 80
             - name: websecure
               containerPort: 443
-              hostPort: 443
             - name: admin
               containerPort: 8080
           env:
