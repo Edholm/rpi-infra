@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: traefik-internal-data
+  namespace: infra
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: infra
+  name: traefik-internal
+  labels:
+    app: traefik-internal
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: traefik-internal
+  template:
+    metadata:
+      labels:
+        app: traefik-internal
+    spec:
+      nodeSelector:
+        node-type: infra
+      serviceAccountName: traefik-ingress-controller
+      containers:
+        - name: traefik
+          image: traefik:v2.0
+          imagePullPolicy: Always
+          args:
+            - --log.level=INFO
+            - --ping=true
+            - --api.insecure
+            - --api.dashboard=true
+            - --accesslog
+            - --entrypoints.web.address=:80
+            - --entrypoints.websecure.address=:443
+            - --providers.kubernetescrd=true
+            - --providers.kubernetescrd.labelselector=expose notin (public)
+            - --certificatesResolvers.namecheap.acme.httpChallenge=false
+            - --certificatesResolvers.namecheap.acme.tlsChallenge=false
+            - --certificatesresolvers.namecheap.acme.dnsChallenge=true
+            - --certificatesresolvers.namecheap.acme.dnsChallenge.provider=namecheap
+            - --certificatesResolvers.namecheap.acme.dnsChallenge.delayBeforeCheck=0
+            - --certificatesresolvers.namecheap.acme.email=certs@verypublic.org
+            - --certificatesresolvers.namecheap.acme.storage=/var/lib/traefik/acme.json
+            - --certificatesResolvers.namecheap.acme.dnsChallenge.resolvers=1.1.1.1:53
+            # Please note that this is the staging Let's Encrypt server.
+            # Once you get things working, you should remove that whole line altogether.
+            #- --certificatesresolvers.namecheap.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+          ports:
+            - name: web
+              containerPort: 80
+            - name: websecure
+              containerPort: 443
+            - name: admin
+              containerPort: 8080
+          env:
+            - name: NAMECHEAP_API_USER
+              valueFrom:
+                secretKeyRef:
+                  name: namecheap
+                  key: api-user
+            - name: NAMECHEAP_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: namecheap
+                  key: api-key
+          volumeMounts:
+            - name: traefik-internal-data
+              mountPath: /var/lib/traefik
+      volumes:
+        - name: traefik-internal-data
+          persistentVolumeClaim:
+            claimName: traefik-internal-data

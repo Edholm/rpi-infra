@@ -21,3 +21,27 @@ spec:
               values:
                 - ssd
                 - infra
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: traefik-internal-pv
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/traefik-internal"
+  persistentVolumeReclaimPolicy: Recycle
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: disktype
+              operator: In
+              values:
+                - ssd
+                - infra

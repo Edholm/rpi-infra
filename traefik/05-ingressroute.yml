@@ -18,6 +18,14 @@ spec:
       middlewares:
         - name: secured-local
           namespace: middleware
+    - match: Host(`traefik-internal.k8s.elee.cloud`)
+      kind: Rule
+      services:
+        - name: traefik-internal
+          port: 8080
+      middlewares:
+        - name: secured-local
+          namespace: middleware
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
@@ -36,6 +44,14 @@ spec:
       services:
       - name: traefik
         port: 8080
+      middlewares:
+        - name: secured-local
+          namespace: middleware
+    - match: Host(`traefik-internal.k8s.elee.cloud`)
+      kind: Rule
+      services:
+        - name: traefik-internal
+          port: 8080
       middlewares:
         - name: secured-local
           namespace: middleware
