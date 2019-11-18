@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: swosh-editor-role
+  namespace: swosh
+rules:
+  - apiGroups: ["", "extensions", "apps"]
+    resources: ["pods", "pods/log", "replicasets", "deployments", "secrets", "services", "endpoints"]
+    verbs: ["*"]
+  - apiGroups: ["traefik.containo.us"]
+    resources: ["middlewares", "ingressroutes", "tlsoptions"]
+    verbs: ["*"]
+  - apiGroups: ["", "apps", "autoscaling", "batch"]
+    resources: ["replicationcontrollers", "daemonsets", "statefulsets", "horizontalpodautoscalers", "jobs", "cronjobs"]
+    verbs: ["get", "list"]

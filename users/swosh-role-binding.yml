@@ -1,0 +1,13 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: swosh-editor-binding
+  namespace: swosh
+subjects:
+- kind: User
+  name: swosh-editor
+  apiGroup: ""
+roleRef:
+  kind: Role
+  name: swosh-editor-role
+  apiGroup: ""
