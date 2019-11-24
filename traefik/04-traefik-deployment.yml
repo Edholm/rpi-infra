@@ -58,6 +58,7 @@ spec:
             - --accesslog.filepath=/var/lib/traefik/access.log
             - --entrypoints.web.address=:80
             - --entrypoints.websecure.address=:443
+            - --providers.file.filename=/var/lib/traefik/config.yml
             - --providers.kubernetescrd=true
             - --providers.kubernetescrd.labelselector=expose in (public, all)
             - --certificatesResolvers.namecheap.acme.httpChallenge=false
