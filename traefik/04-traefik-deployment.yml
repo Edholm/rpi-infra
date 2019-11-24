@@ -56,6 +56,7 @@ spec:
             - --api.dashboard=true
             - --accesslog
             - --accesslog.filepath=/var/lib/traefik/access.log
+            - --accesslog.fields.headers.defaultMode="keep"
             - --entrypoints.web.address=:80
             - --entrypoints.websecure.address=:443
             - --providers.file.filename=/var/lib/traefik/config.yml
