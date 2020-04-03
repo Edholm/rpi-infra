@@ -8,14 +8,14 @@ Create a secret for the dns challenge api with the following content:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: namecheap
+  name: cloudflare
   namespace: infra
 type: Opaque
 data:
-  api-user: Ti9B
-  api-key: Ti9B
+  email: <base64-encoded-string-goes-here>
+  api-key: <base64-encoded-pwd-goes-here>
 ```
-Suggested name: `touch 03-namecheap-secret.yml`
+Suggested name: `touch 03-cloudflare-secret.yml`
 ### Encode
 Encode the `base64` secret with the following command:
 ```

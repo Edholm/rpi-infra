@@ -53,17 +53,17 @@ spec:
             - --entrypoints.websecure.address=:443
             - --providers.kubernetescrd=true
             - --providers.kubernetescrd.labelselector=expose notin (public)
-            - --certificatesResolvers.namecheap.acme.httpChallenge=false
-            - --certificatesResolvers.namecheap.acme.tlsChallenge=false
-            - --certificatesresolvers.namecheap.acme.dnsChallenge=true
-            - --certificatesresolvers.namecheap.acme.dnsChallenge.provider=namecheap
-            - --certificatesResolvers.namecheap.acme.dnsChallenge.delayBeforeCheck=0
-            - --certificatesresolvers.namecheap.acme.email=certs@verypublic.org
-            - --certificatesresolvers.namecheap.acme.storage=/var/lib/traefik/acme.json
-            - --certificatesResolvers.namecheap.acme.dnsChallenge.resolvers=1.1.1.1:53
+            - --certificatesResolvers.cloudflare.acme.httpChallenge=false
+            - --certificatesResolvers.cloudflare.acme.tlsChallenge=false
+            - --certificatesresolvers.cloudflare.acme.dnsChallenge=true
+            - --certificatesresolvers.cloudflare.acme.dnsChallenge.provider=cloudflare
+            - --certificatesResolvers.cloudflare.acme.dnsChallenge.delayBeforeCheck=0
+            - --certificatesresolvers.cloudflare.acme.email=certs@verypublic.org
+            - --certificatesresolvers.cloudflare.acme.storage=/var/lib/traefik/acme.json
+            - --certificatesResolvers.cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53
             # Please note that this is the staging Let's Encrypt server.
             # Once you get things working, you should remove that whole line altogether.
-            #- --certificatesresolvers.namecheap.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+            #- --certificatesresolvers.cloudflare.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
           ports:
             - name: web
               containerPort: 80
@@ -72,15 +72,15 @@ spec:
             - name: admin
               containerPort: 8080
           env:
-            - name: NAMECHEAP_API_USER
+            - name: CLOUDFLARE_EMAIL
               valueFrom:
                 secretKeyRef:
-                  name: namecheap
-                  key: api-user
-            - name: NAMECHEAP_API_KEY
+                  name: cloudflare
+                  key: email
+            - name: CLOUDFLARE_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: namecheap
+                  name: cloudflare
                   key: api-key
           volumeMounts:
             - name: traefik-internal-data
