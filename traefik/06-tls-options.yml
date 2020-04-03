@@ -1,7 +1,7 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: TLSOption
 metadata:
-  name: default
+  name: default-tls
   namespace: infra
   labels:
     expose: all
