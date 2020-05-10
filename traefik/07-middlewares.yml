@@ -54,6 +54,7 @@ spec:
   ipWhiteList:
     sourceRange:
       - 192.168.1.0/24   # Internal lan
+      - 172.16.16.0/24   # Internal lan
       - 192.168.10.0/24  # MetalLB network
       - 10.200.100.0/24  # Wireguard
       - 127.0.0.1/16     # Localhost
