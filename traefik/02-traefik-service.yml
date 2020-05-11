@@ -7,7 +7,7 @@ metadata:
   namespace: infra
 spec:
   type: LoadBalancer
-  loadBalancerIP: 192.168.10.2
+  loadBalancerIP: 172.16.17.2
   externalTrafficPolicy: Local
   ports:
     - protocol: TCP
@@ -31,7 +31,7 @@ metadata:
   namespace: infra
 spec:
   type: LoadBalancer
-  loadBalancerIP: 192.168.10.3
+  loadBalancerIP: 172.16.17.3
   externalTrafficPolicy: Local
   ports:
     - protocol: TCP
