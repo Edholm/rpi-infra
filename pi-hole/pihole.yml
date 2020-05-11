@@ -111,7 +111,7 @@ spec:
         node-type: infra
       containers:
         - name: pihole
-          image: pihole/pihole:latest
+          image: pihole/pihole:v5.0
           imagePullPolicy: IfNotPresent
           env:
             - name: VIRTUAL_HOST
